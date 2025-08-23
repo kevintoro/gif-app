@@ -1,18 +1,20 @@
 import { useState } from "react";
+import { getGifsByQuery } from "./gifs/actions/get-gifs-by-query.action";
 import { GifList } from "./gifs/components/GifList";
 import { PreviousSearches } from "./gifs/components/PreviousSearches";
-import { mockGifs } from "./mock-data/gifs.mock";
+import type { Gif } from "./gifs/interfaces/gif.interface";
 import { CustomHeader } from "./shared/components/CustomHeader";
 import { SearchBar } from "./shared/components/SearchBar";
 
 export const GifsApp = () => {
-  const [previousSearches, setPreviousSearches] = useState(["dragon ball z"]);
+  const [previousSearches, setPreviousSearches] = useState<string[]>([]);
+  const [gifs, setGifs] = useState<Gif[]>([]);
 
-  const onLabelClicked = (label: string) => {
-    console.log(label);
+  const onLabelClicked = async (label: string) => {
+    await fetchGifs(label);
   };
 
-  const handleSearch = (query: string) => {
+  const handleSearch = async (query: string) => {
     query = query.toLowerCase().trim();
     if (query.length === 0) {
       return;
@@ -24,6 +26,13 @@ export const GifsApp = () => {
 
     const savedSearches = previousSearches.slice(0, 8);
     setPreviousSearches([query, ...savedSearches]);
+
+    await fetchGifs(query);
+  };
+
+  const fetchGifs = async (query: string) => {
+    const response = await getGifsByQuery(query);
+    setGifs(response);
   };
 
   return (
@@ -37,7 +46,7 @@ export const GifsApp = () => {
         searches={previousSearches}
         onLabelClicked={onLabelClicked}
       />
-      <GifList gifs={mockGifs} />
+      <GifList gifs={gifs} />
     </>
   );
 };
